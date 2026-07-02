@@ -22,3 +22,4 @@ Pricing, plan, and free-tier notes: `pricing-free-tier.md`
 - IONOS (managed-friendly): `ionos/ionosctl.sh`
 - Hostwinds (US network): `hostwinds/hostwinds.sh`
 - Kamatera (flexible scaling): `kamatera/kamatera.sh`
+- Cloudflare (CF): `cloudflare/cf.sh`
