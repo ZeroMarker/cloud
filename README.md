@@ -1,5 +1,6 @@
 # cloud
 
+
 Common CLI commands for cloud providers and VPS platforms.
 
 Pricing, plan, and free-tier notes: `pricing-free-tier.md`
@@ -23,3 +24,5 @@ Pricing, plan, and free-tier notes: `pricing-free-tier.md`
 - Hostwinds (US network): `hostwinds/hostwinds.sh`
 - Kamatera (flexible scaling): `kamatera/kamatera.sh`
 - Cloudflare (CF): `cloudflare/cf.sh`
+- bitiful
+- Mux
