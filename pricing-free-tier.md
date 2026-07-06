@@ -2,7 +2,14 @@
 
 Last checked: 2026-06-23.
 
-Pricing changes often by region, currency, tax, image, bandwidth, IPv4, support plan, and promotion eligibility. Use this file as a quick shortlist, then confirm on the official pricing page before buying.
+Pricing changes often by region, currency, tax, image, bandwidth, IPv4, support
+plan, and promotion eligibility. Use this file as a shortlist for comparison,
+then confirm the final price and trial terms on the official pricing page before
+creating resources.
+
+This file focuses on cloud/VPS entry points, trial credits, always-free offers,
+and common billing traps. It is not a quote, contract, or guarantee of
+availability.
 
 ## Quick Picks
 
@@ -44,3 +51,7 @@ Pricing changes often by region, currency, tax, image, bandwidth, IPv4, support 
 - Verify trial expiry behavior: disabled, deleted, or converted to paid.
 - Set billing alerts before creating instances.
 - Delete test resources instead of only shutting them down if the provider bills stopped disks/IPs.
+- Review region-specific price differences before choosing a default region.
+- Check minimum billing units, prepaid discounts, and refund rules.
+- Confirm whether support plans, managed services, or marketplace images add
+  separate monthly charges.
