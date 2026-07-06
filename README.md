@@ -11,6 +11,7 @@ Pricing, plan, and free-tier notes: `pricing-free-tier.md`
 - Amazon Web Services: `aws/aws.sh`
 - Microsoft Azure: `azure/azure.sh`
 - Google Cloud Platform: `gcp/gcloud.sh`
+- Firebase: `firebase/firebase.sh`
 - Tencent Cloud: `tencent/tencentcloud.sh`
 - Huawei Cloud: `huawei/hcloud.sh`
 - Oracle Cloud Infrastructure: `oracle/oci.sh`
