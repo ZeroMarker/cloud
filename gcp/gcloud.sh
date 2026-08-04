@@ -32,8 +32,7 @@ gcloud compute instances add-metadata <instance> --zone=<zone> --metadata=key=va
 gcloud compute ssh <instance> --zone=<zone>
 gcloud compute scp <file> <instance>:<path> --zone=<zone>
 gcloud compute scp <instance>:<path> <file> --zone=<zone>
-gcloud compute instances disk-utils <instance> --zone=<zone>
-gcloud compute instances snapshot <instance> --zone=<zone> --snapshot-names=<name>
+# To snapshot an instance's disk, use: gcloud compute disks snapshot <disk> --zone=<zone> --snapshot-names=<name>
 
 # Instance Templates
 gcloud compute instance-templates list
@@ -56,7 +55,6 @@ gcloud compute disks create <disk> --zone=<zone> --size=<size> --type=<type>
 gcloud compute disks delete <disk> --zone=<zone>
 gcloud compute disks resize <disk> --zone=<zone> --size=<new-size>
 gcloud compute disks snapshot <disk> --zone=<zone> --snapshot-names=<name>
-gcloud compute disks snapshot <disk> --zone=<zone> --device-name=<device>
 gcloud compute disks add-labels <disk> --zone=<zone> --labels=key=value
 
 # Snapshots
@@ -65,7 +63,9 @@ gcloud compute snapshots describe <snapshot>
 gcloud compute snapshots delete <snapshot>
 gcloud compute snapshots create <snapshot> --source-disk=<disk> --source-disk-zone=<zone>
 gcloud compute snapshots add-labels <snapshot> --labels=key=value
-gcloud compute snapshots export <snapshot> --image-uri=<gcs-path>
+# Export a snapshot: create an image from it, then export the image to GCS
+gcloud compute images create <image> --source-snapshot=<snapshot>
+gcloud compute images export --image=<image> --destination-uri=gs://<bucket>/<file>.tar.gz
 
 # Images
 gcloud compute images list
@@ -73,11 +73,10 @@ gcloud compute images describe <image>
 gcloud compute images create <image> --source-uri=<gcs-path> --family=<family>
 gcloud compute images delete <image>
 gcloud compute images add-labels <image> --labels=key=value
-gcloud compute images deprecate <image>
+gcloud compute images deprecate <image> --state=DEPRECATED
 
 # Machine Types
 gcloud compute machine-types list --zones=<zone>
-gcloud compute machine-types zones list
 
 # Zones / Regions
 gcloud compute zones list
@@ -275,8 +274,8 @@ gcloud pubsub schemas create <schema> --type=avro --definition-file=<file>
 gcloud tasks queues list --location=<region>
 gcloud tasks queues create <queue> --location=<region>
 gcloud tasks queues delete <queue> --location=<region>
-gcloud tasks create --queue=<queue> --location=<region> --http-endpoint=<url> --http-method=POST --payload-body=<data>
-gcloud tasks describe --queue=<queue> --location=<region> --task=<task>
+gcloud tasks create-http-task [task-id] --queue=<queue> --location=<region> --url=<url> --http-method=POST --payload-body=<data>
+gcloud tasks describe <task> --queue=<queue> --location=<region>
 
 # Cloud Build
 gcloud builds list
@@ -321,8 +320,8 @@ gcloud dns managed-zones create <zone> --dns-name=<domain>. --description=<desc>
 gcloud dns managed-zones delete <zone>
 gcloud dns record-sets list --zone=<zone>
 gcloud dns record-sets transaction start --zone=<zone>
-gcloud dns record-sets transaction add @ A <ip> --name=<domain>. --zone=<zone> --ttl=300
-gcloud dns record-sets transaction add www CNAME <target>. --name=<domain>. --zone=<zone> --ttl=300
+gcloud dns record-sets transaction add <ip> --name=<domain>. --type=A --zone=<zone> --ttl=300
+gcloud dns record-sets transaction add <target>. --name=www.<domain>. --type=CNAME --zone=<zone> --ttl=300
 gcloud dns record-sets transaction execute --zone=<zone>
 
 # Cloud KMS
@@ -331,8 +330,8 @@ gcloud kms keyrings create <keyring> --location=<location>
 gcloud kms keys list --keyring=<keyring> --location=<location>
 gcloud kms keys create <key> --keyring=<keyring> --location=<location> --purpose=encryption
 gcloud kms keys versions list --keyring=<keyring> --location=<location> --key=<key>
-gcloud kms encrypt --key=<key> --keyring=<keyring> --location=<location> --plaintext-file=<in> --cipher-file=<out>
-gcloud kms decrypt --key=<key> --keyring=<keyring> --location=<location> --cipher-file=<in> --plaintext-file=<out>
+gcloud kms encrypt --key=<key> --keyring=<keyring> --location=<location> --plaintext-file=<in> --ciphertext-file=<out>
+gcloud kms decrypt --key=<key> --keyring=<keyring> --location=<location> --ciphertext-file=<in> --plaintext-file=<out>
 
 # Secret Manager
 gcloud secrets list
@@ -365,7 +364,7 @@ gcloud projects describe <project>
 gcloud projects create <project> --name=<name>
 gcloud projects delete <project>
 gcloud projects update <project> --name=<new-name>
-gcloud projects enable-service <project> --service=<api>
+gcloud services enable <api> --project=<project>
 
 # Organizations
 gcloud organizations list
