@@ -18,6 +18,18 @@ must be replaced before running.
 5. Check [pricing-free-tier.md](pricing-free-tier.md) before creating billable
    resources.
 
+## Command Conventions
+
+- Values in angle brackets, such as `<project-id>`, are placeholders and must be
+  replaced; do not type the brackets literally.
+- Uppercase values such as `SERVER_ID` are placeholders unless the surrounding
+  notes explicitly define them as environment variables.
+- The `.sh` files are reference notebooks, not scripts intended to be run from
+  top to bottom. Copy only the command you need and inspect it first.
+- Commands that create, resize, transfer, or retain resources can incur charges.
+- Commands containing `delete`, `remove`, `terminate`, `purge`, `--force`, or
+  `--delete` can be destructive. List or preview the target before running them.
+
 ## Repository Layout
 
 | Path | Purpose |
@@ -60,8 +72,8 @@ must be replaced before running.
 | Provider | CLI notes |
 | --- | --- |
 | Cloudflare | [cloudflare/cf.sh](cloudflare/cf.sh) |
-| Bitiful | Planned |
-| Mux | Planned |
+| Bitiful S4 | [bitiful/bitiful.sh](bitiful/bitiful.sh) |
+| Mux | [mux/mux.sh](mux/mux.sh) |
 
 ## Safety Notes
 
