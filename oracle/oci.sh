@@ -1,237 +1,238 @@
-# Oracle Cloud Infrastructure (OCI) CLI commands
+# Oracle Cloud Infrastructure (OCI) CLI command notebook
+# Last verified: 2026-08-15 with OCI CLI 3.90.2
+#
+# This is a reference notebook, not a script to run from top to bottom.
+# Replace every <placeholder> before executing a command. Run `oci <group> --help`
+# when adapting an example to a different resource type.
 
 # Install
-bash -c "$(curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/install.sh)"
-# or
-pip3 install oci-cli
+# Linux/macOS installer maintained by Oracle:
+bash -c "$(curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh)"
+# Windows PowerShell installer (run directly in PowerShell, without the leading #):
+# powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.ps1'))"
 
-# Authentication
+# Version and authentication
+oci --version
 oci setup config
-oci iam availability-domain list
-oci iam tenancy get
+oci iam region list --all
+oci iam availability-domain list --compartment-id <tenancy-ocid>
+oci iam tenancy get --tenancy-id <tenancy-ocid>
 
-# Compute (Instances)
-oci compute instance list --compartment-id <compartment-ocid>
+# Current local deployment snapshot (2026-08-15)
+# Home region: ap-singapore-2
+# Instance: <instance-name>
+# Shape: VM.Standard.A1.Flex, 2 OCPUs, 12 GB memory
+# Boot volume: 150 GB, 10 VPUs/GB (Balanced)
+# Public IP: <public-ip>
+# Local SSH shortcut: ssh oracle
+
+# Always Free guardrails (verify again before creating resources)
+# - Create Always Free Compute only in the tenancy home region.
+# - VM.Standard.A1.Flex: 2 OCPUs and 12 GB memory total.
+# - VM.Standard.E2.1.Micro: up to two instances.
+# - Boot volumes plus block volumes: 200 GB total.
+# - Keep boot-volume performance at 10 VPUs/GB (Balanced).
+# - Use an Always Free-eligible Oracle Linux or Ubuntu image.
+# - VM.Standard.E4.Flex and Ultra High Performance volumes are not Always Free.
+
+# Compute instances
+oci compute instance list --compartment-id <compartment-ocid> --all
 oci compute instance get --instance-id <instance-ocid>
-oci compute instance launch --compartment-id <compartment-ocid> --availability-domain <ad> --shape <shape> --subnet-id <subnet-ocid> --display-name <name>
-oci compute instance launch --compartment-id <compartment-ocid> --availability-domain <ad> --shape VM.Standard.E4.Flex --subnet-id <subnet-ocid> --display-name <name> --image-id <image-ocid> --shape-config '{"memoryInGBs": 4, "ocpus": 1}'
-oci compute instance terminate --instance-id <instance-ocid>
+
+# Always Free A1 example. Only the public SSH key is uploaded; keep the private
+# key on the client. The 150 GB boot volume leaves 50 GB of the 200 GB allowance.
+oci compute instance launch \
+  --compartment-id <compartment-ocid> \
+  --availability-domain <availability-domain> \
+  --shape VM.Standard.A1.Flex \
+  --shape-config '{"ocpus": 2, "memoryInGBs": 12}' \
+  --subnet-id <subnet-ocid> \
+  --image-id <always-free-image-ocid> \
+  --display-name <instance-name> \
+  --assign-public-ip true \
+  --boot-volume-size-in-gbs 150 \
+  --ssh-authorized-keys-file ~/.ssh/id_rsa_oracle.pub
+
+# Instance lifecycle
 oci compute instance stop --instance-id <instance-ocid>
 oci compute instance start --instance-id <instance-ocid>
 oci compute instance reboot --instance-id <instance-ocid>
 oci compute instance update --instance-id <instance-ocid> --display-name <new-name>
-oci compute instance get-instance-agent-config --instance-id <instance-ocid>
 
-# Compute Images
-oci compute image list --compartment-id <compartment-ocid>
-oci compute image list --compartment-id <compartment-ocid> --sort-by TIMECREATED --sort-order DESC
+# Termination is destructive. Choose boot-volume behavior explicitly.
+oci compute instance terminate --instance-id <instance-ocid> --preserve-boot-volume false
+# To retain the boot volume instead:
+# oci compute instance terminate --instance-id <instance-ocid> --preserve-boot-volume true
+
+# VNIC and IP discovery
+oci compute vnic-attachment list --compartment-id <compartment-ocid> --instance-id <instance-ocid>
+oci network vnic get --vnic-id <vnic-ocid>
+
+# Images
+oci compute image list --compartment-id <compartment-ocid> --all --sort-by TIMECREATED --sort-order DESC
 oci compute image get --image-id <image-ocid>
-oci compute image export to-object --instance-id <instance-ocid> --destination-uri <bucket-url>
+oci compute image export to-object \
+  --image-id <image-ocid> \
+  --namespace <object-storage-namespace> \
+  --bucket-name <bucket-name> \
+  --name <object-name>
 
-# Instance Configurations
-oci compute instance-configuration list --compartment-id <compartment-ocid>
-oci compute instance-configuration get --instance-configuration-id <config-ocid>
-oci compute instance-configuration create --compartment-id <compartment-ocid> --instance-configuration <json-file>
+# Instance configurations and pools belong to compute-management, not compute.
+oci compute-management instance-configuration list --compartment-id <compartment-ocid> --all
+oci compute-management instance-configuration get --instance-configuration-id <configuration-ocid>
+oci compute-management instance-configuration create \
+  --compartment-id <compartment-ocid> \
+  --instance-details file://<instance-details-json>
 
-# Instance Pools
-oci compute instance-pool list --compartment-id <compartment-ocid>
-oci compute instance-pool get --instance-pool-id <pool-ocid>
-oci compute instance-pool create --compartment-id <compartment-ocid> --instance-configuration-id <config-ocid> --size <count> --display-name <name>
-oci compute instance-pool terminate --instance-pool-id <pool-ocid>
-oci compute instance-pool update --instance-pool-id <pool-ocid> --size <new-count>
+oci compute-management instance-pool list --compartment-id <compartment-ocid> --all
+oci compute-management instance-pool get --instance-pool-id <pool-ocid>
+oci compute-management instance-pool update --instance-pool-id <pool-ocid> --size <new-size>
+oci compute-management instance-pool terminate --instance-pool-id <pool-ocid>
 
-# Boot Volumes
-oci compute boot-volume list --compartment-id <compartment-ocid>
-oci compute boot-volume get --boot-volume-id <bootvol-ocid>
-oci compute boot-volume create --availability-domain <ad> --compartment-id <compartment-ocid> --source-details <json>
+# Boot volumes use the bv command group.
+oci bv boot-volume list --compartment-id <compartment-ocid> --availability-domain <availability-domain> --all
+oci bv boot-volume get --boot-volume-id <boot-volume-ocid>
+oci bv boot-volume update --boot-volume-id <boot-volume-ocid> --vpus-per-gb 10
+oci bv boot-volume delete --boot-volume-id <boot-volume-ocid>
 
-# Block Volumes
-oci bv volume list --compartment-id <compartment-ocid>
+# Block volumes
+oci bv volume list --compartment-id <compartment-ocid> --availability-domain <availability-domain> --all
 oci bv volume get --volume-id <volume-ocid>
-oci bv volume create --compartment-id <compartment-ocid> --availability-domain <ad> --display-name <name> --size-in-gbs <size>
+oci bv volume create \
+  --compartment-id <compartment-ocid> \
+  --availability-domain <availability-domain> \
+  --display-name <volume-name> \
+  --size-in-gbs <size> \
+  --vpus-per-gb 10
+oci bv volume update --volume-id <volume-ocid> --display-name <new-name> --size-in-gbs <new-size> --vpus-per-gb 10
 oci bv volume delete --volume-id <volume-ocid>
-oci bv volume update --volume-id <volume-ocid> --display-name <new-name> --size-in-gbs <new-size>
-oci bv volume backup list --volume-id <volume-ocid>
-oci bv volume backup create --volume-id <volume-ocid> --display-name <name>
 
-# Volume Attachments
-oci compute volume-attachment list --compartment-id <compartment-ocid>
-oci compute volume-attachment attach --instance-id <instance-ocid> --volume-id <volume-ocid> --type Paravirtualized
+# Block-volume backups use `bv backup`; boot-volume backups use
+# `bv boot-volume-backup`.
+oci bv backup list --compartment-id <compartment-ocid> --volume-id <volume-ocid> --all
+oci bv backup create --volume-id <volume-ocid> --display-name <backup-name>
+oci bv boot-volume-backup list --compartment-id <compartment-ocid> --boot-volume-id <boot-volume-ocid> --all
+oci bv boot-volume-backup create --boot-volume-id <boot-volume-ocid> --display-name <backup-name>
+
+# Volume attachments
+oci compute volume-attachment list --compartment-id <compartment-ocid> --instance-id <instance-ocid> --all
+oci compute volume-attachment attach --instance-id <instance-ocid> --volume-id <volume-ocid> --type paravirtualized
 oci compute volume-attachment detach --volume-attachment-id <attachment-ocid>
 
-# Networking (VCN)
-oci network vcn list --compartment-id <compartment-ocid>
-oci network vcn create --compartment-id <compartment-ocid> --cidr-blocks '["10.0.0.0/16"]' --display-name <name>
-oci network vcn delete --vcn-id <vcn-ocid>
+# VCN and subnet
+oci network vcn list --compartment-id <compartment-ocid> --all
+oci network vcn create --compartment-id <compartment-ocid> --cidr-blocks '["10.0.0.0/16"]' --display-name <vcn-name>
+oci network subnet list --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --all
+oci network subnet create \
+  --compartment-id <compartment-ocid> \
+  --vcn-id <vcn-ocid> \
+  --cidr-block <subnet-cidr> \
+  --display-name <subnet-name>
 
-# Subnets
-oci network subnet list --compartment-id <compartment-ocid> --vcn-id <vcn-ocid>
-oci network subnet create --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --cidr-block <cidr> --display-name <name>
-oci network subnet update --subnet-id <subnet-ocid> --display-name <new-name>
+# Gateways, routes, and security lists
+oci network internet-gateway list --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --all
+oci network internet-gateway create --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --is-enabled true --display-name <gateway-name>
+oci network nat-gateway list --compartment-id <compartment-ocid> --all
+oci network route-table list --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --all
+oci network security-list list --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --all
+oci network nsg list --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --all
 
-# Internet Gateways
-oci network internet-gateway list --compartment-id <compartment-ocid> --vcn-id <vcn-ocid>
-oci network internet-gateway create --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --is-enabled true
+# Network Load Balancer (NLB)
+oci nlb network-load-balancer list --compartment-id <compartment-ocid> --all
+oci nlb network-load-balancer create \
+  --compartment-id <compartment-ocid> \
+  --display-name <nlb-name> \
+  --subnet-id <subnet-ocid> \
+  --is-private false
+oci nlb network-load-balancer delete --network-load-balancer-id <nlb-ocid>
 
-# NAT Gateways
-oci network nat-gateway list --compartment-id <compartment-ocid>
-oci network nat-gateway create --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --display-name <name>
-oci network nat-gateway delete --nat-gateway-id <nat-ocid>
+# Flexible Load Balancer. For Always Free, use the 10 Mbps flexible shape only.
+oci lb load-balancer list --compartment-id <compartment-ocid> --all
+oci lb load-balancer create \
+  --compartment-id <compartment-ocid> \
+  --display-name <lb-name> \
+  --shape-name flexible \
+  --shape-details '{"minimumBandwidthInMbps": 10, "maximumBandwidthInMbps": 10}' \
+  --subnet-ids '["<subnet-ocid>"]' \
+  --is-private false
 
-# Route Tables
-oci network route-table list --compartment-id <compartment-ocid> --vcn-id <vcn-ocid>
-oci network route-table create --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --route-rules <json>
-
-# Security Lists
-oci network security-list list --compartment-id <compartment-ocid> --vcn-id <vcn-ocid>
-oci network security-list create --compartment-id <compartment-ocid> --vcn-id <vcn-ocid> --display-name <name> --ingress-security-rules <json> --egress-security-rules <json>
-
-# Network Load Balancers
-oci network load-balancer list --compartment-id <compartment-ocid>
-oci network load-balancer create --compartment-id <compartment-ocid> --subnet-ids '[<subnet-ocid>]' --display-name <name> --is-private false
-oci network load-balancer delete --network-load-balancer-id <nlb-ocid>
-oci network load-balancer backend-set list --network-load-balancer-id <nlb-ocid>
-oci network load-balancer backend-set create --network-load-balancer-id <nlb-ocid> --name <name> --policy <policy> --backends <json> --health-check <json>
-oci network load-balancer backend list --network-load-balancer-id <nlb-ocid> --backend-set-name <name>
-oci network load-balancer listener list --network-load-balancer-id <nlb-ocid>
-oci network load-balancer listener create --network-load-balancer-id <nlb-ocid> --default-backend-set-name <name> --name <name> --port <port> --protocol <protocol>
-
-# Load Balancers (Classic)
-oci network load-balancer load-balancer list --compartment-id <compartment-ocid>
-oci network load-balancer load-balancer create --compartment-id <compartment-ocid> --subnet-ids '[<subnet-ocid>]' --display-name <name>
-
-# Public IPs
-oci network public-ip list --compartment-id <compartment-ocid>
+# Public and private IPs
+oci network public-ip list --compartment-id <compartment-ocid> --scope REGION --all
 oci network public-ip create --compartment-id <compartment-ocid> --lifetime RESERVED --display-name <name>
-oci network public-ip delete --public-ip-id <ip-ocid>
-
-# Private IPs
-oci network private-ip list --compartment-id <compartment-ocid>
-oci network private-ip list --subnet-id <subnet-ocid>
+oci network public-ip delete --public-ip-id <public-ip-ocid>
+oci network private-ip list --subnet-id <subnet-ocid> --all
 
 # DNS
-oci dns zone list --compartment-id <compartment-ocid>
-oci dns zone create --compartment-id <compartment-ocid> --name <domain> --zone-type PRIMARY
-oci dns zone delete --zone-id <zone-ocid>
-oci dns record list --zone-name <domain>
-oci dns record create --zone-name <domain> --domain <subdomain> --rtype A --rdata <ip>
-oci dns record create --zone-name <domain> --domain <subdomain> --rtype CNAME --rdata <target>
-oci dns record create --zone-name <domain> --domain <subdomain> --rtype MX --rdata "<priority> <mail-server>"
-oci dns record create --zone-name <domain> --domain <subdomain> --rtype TXT --rdata <value>
-oci dns record update --zone-name <domain> --domain <subdomain> --rtype A --rdata <new-ip>
-oci dns record delete --zone-name <domain> --domain <subdomain> --rtype A
-oci dns zone import from-file --file <zone-file>
+oci dns zone list --compartment-id <compartment-ocid> --scope GLOBAL --all
+oci dns zone create --compartment-id <compartment-ocid> --name <zone-name> --zone-type PRIMARY --scope GLOBAL
+oci dns zone delete --zone-name-or-id <zone-name-or-ocid> --scope GLOBAL
+oci dns record zone get --zone-name-or-id <zone-name-or-ocid> --scope GLOBAL
+oci dns record rrset get --zone-name-or-id <zone-name-or-ocid> --domain <fqdn> --rtype A --scope GLOBAL
+oci dns record rrset update \
+  --zone-name-or-id <zone-name-or-ocid> \
+  --domain <fqdn> \
+  --rtype A \
+  --items '[{"domain":"<fqdn>","rtype":"A","rdata":"<ip>","ttl":300}]' \
+  --scope GLOBAL
+oci dns record rrset delete --zone-name-or-id <zone-name-or-ocid> --domain <fqdn> --rtype A --scope GLOBAL
+oci dns zone create-zone-from-zone-file \
+  --compartment-id <compartment-ocid> \
+  --create-zone-from-zone-file-details file://<zone-file> \
+  --scope GLOBAL
 
 # Object Storage
-oci os bucket list --compartment-id <compartment-ocid>
-oci os bucket create --name <bucket-name> --compartment-id <compartment-ocid>
-oci os bucket delete --name <bucket-name>
-oci os object list --bucket-name <bucket-name>
-oci os object put --bucket-name <bucket-name> --name <object-name> --file <path>
-oci os object get --bucket-name <bucket-name> --name <object-name> --file <output-path>
+oci os ns get
+oci os bucket list --compartment-id <compartment-ocid> --all
+oci os bucket create --compartment-id <compartment-ocid> --name <bucket-name>
+oci os object list --bucket-name <bucket-name> --all
+oci os object put --bucket-name <bucket-name> --name <object-name> --file <local-file>
+oci os object get --bucket-name <bucket-name> --name <object-name> --file <output-file>
 oci os object delete --bucket-name <bucket-name> --name <object-name>
-oci os presigned-url get --namespace <ns> --bucket-name <bucket> --name <object> --expires 3600
 
-# Databases
-oci db system list --compartment-id <compartment-ocid>
-oci db system get --db-system-id <db-ocid>
-oci db system launch --compartment-id <compartment-ocid> --availability-domain <ad> --db-edition <edition> --shape <shape> --subnet-id <subnet-ocid> --display-name <name>
-oci db system terminate --db-system-id <db-ocid>
-oci db backup list --db-system-id <db-ocid>
-oci db backup create --db-system-id <db-ocid> --display-name <name>
+# A pre-authenticated request is the OCI equivalent of a presigned URL.
+oci os preauth-request create \
+  --namespace-name <namespace> \
+  --bucket-name <bucket-name> \
+  --name <request-name> \
+  --access-type ObjectRead \
+  --object-name <object-name> \
+  --time-expires <utc-expiration-time>
 
-# Autonomous Database
-oci db autonomous-database list --compartment-id <compartment-ocid>
-oci db autonomous-database create --compartment-id <compartment-ocid> --display-name <name> --db-name <dbname> --admin-password <password> --db-workload <OLTP|DW|APEX|ALL>
-oci db autonomous-database terminate --autonomous-database-id <adb-ocid>
-oci db autonomous-database start --autonomous-database-id <adb-ocid>
-oci db autonomous-database stop --autonomous-database-id <adb-ocid>
-oci db autonomous-database connection list --autonomous-database-id <adb-ocid>
-oci db autonomous-database wallet download --autonomous-database-id <adb-ocid> --file <path>
+# Autonomous AI Database. Keep the password in a task-specific environment
+# variable or secret store; never commit it to this repository.
+oci db autonomous-database list --compartment-id <compartment-ocid> --all
+oci db autonomous-database create \
+  --compartment-id <compartment-ocid> \
+  --db-name <database-name> \
+  --display-name <display-name> \
+  --db-workload OLTP \
+  --is-free-tier true \
+  --admin-password "$OCI_ADB_ADMIN_PASSWORD"
+oci db autonomous-database get --autonomous-database-id <database-ocid>
+oci db autonomous-database stop --autonomous-database-id <database-ocid>
+oci db autonomous-database start --autonomous-database-id <database-ocid>
+oci db autonomous-database terminate --autonomous-database-id <database-ocid>
 
-# IAM
-oci iam user list --compartment-id <tenancy-ocid>
-oci iam user create --name <username> --email <email> --compartment-id <tenancy-ocid>
-oci iam user delete --user-id <user-ocid>
-oci iam group list --compartment-id <tenancy-ocid>
-oci iam group create --name <name> --compartment-id <tenancy-ocid>
-oci iam policy list --compartment-id <tenancy-ocid>
-oci iam policy create --name <name> --compartment-id <tenancy-ocid> --statements <json>
-oci iam compartment list --compartment-id <tenancy-ocid>
-oci iam compartment create --name <name> --compartment-id <tenancy-ocid> --description <desc>
+# IAM and API keys
+oci iam user list --compartment-id <tenancy-ocid> --all
+oci iam group list --compartment-id <tenancy-ocid> --all
+oci iam policy list --compartment-id <tenancy-ocid> --all
+oci iam compartment list --compartment-id <tenancy-ocid> --compartment-id-in-subtree true --all
+oci iam api-key list --user-id <user-ocid> --all
+oci iam api-key upload --user-id <user-ocid> --key-file <public-api-key-file>
 
-# Dynamic Groups
-oci iam dynamic-group list --compartment-id <tenancy-ocid>
-oci iam dynamic-group create --name <name> --compartment-id <tenancy-ocid> --matching-rule <rule>
+# Audit, health checks, monitoring, and resource search
+oci audit event list --compartment-id <compartment-ocid> --start-time <start-time> --end-time <end-time>
+oci health-checks http-monitor list --compartment-id <compartment-ocid> --all
+oci monitoring alarm list --compartment-id <compartment-ocid> --all
+oci search resource structured-search --query-text "query all resources" --limit 1000
 
-# API Keys
-oci iam api-key list --user-id <user-ocid>
-oci iam api-key upload --user-id <user-ocid> --key-file <path>
+# Output and pagination
+oci compute instance list --compartment-id <compartment-ocid> --output json --all
+oci compute instance list --compartment-id <compartment-ocid> --output table --all
+oci compute instance list --compartment-id <compartment-ocid> --output yaml --all
+oci compute instance list --compartment-id <compartment-ocid> --limit 100
+oci compute instance list --compartment-id <compartment-ocid> --page <page-token>
 
-# Auth Tokens
-oci iam auth-token list --user-id <user-ocid>
-oci iam auth-token create --user-id <user-ocid> --description <desc>
-
-# Customer Secret Keys
-oci iam customer-secret-key list --user-id <user-ocid>
-oci iam customer-secret-key create --user-id <user-ocid> --display-name <name>
-
-# Tags
-oci iam tag namespace list --compartment-id <tenancy-ocid>
-oci iam tag namespace create --compartment-id <tenancy-ocid> --name <namespace>
-oci iam tag list --tag-namespace-id <ns-ocid>
-oci iam tag create --tag-namespace-id <ns-ocid> --name <tag-name>
-oci iam tag-default list --compartment-id <tenancy-ocid>
-
-# Events
-oci events rule list --compartment-id <compartment-ocid>
-oci events rule create --compartment-id <compartment-ocid> --display-name <name> --condition <json> --actions <json>
-
-# Audit
-oci audit event list --start-time <time> --end-time <time>
-
-# Key Management (Vault)
-oci kms management key list --compartment-id <compartment-ocid> --endpoint <endpoint>
-oci kms management key create --compartment-id <compartment-ocid> --endpoint <endpoint> --display-name <name> --key-shape '{"algorithm": "AES", "length": 32}'
-
-# Functions
-oci fn function list --application-id <app-ocid>
-oci fn application list --compartment-id <compartment-ocid>
-oci fn function invoke --function-id <fn-ocid> --file <input-file>
-
-# API Gateway
-oci apigateway gateway list --compartment-id <compartment-ocid>
-oci apigateway deployment list --compartment-id <compartment-ocid>
-
-# Service Connector Hub
-oci sch service-connector list --compartment-id <compartment-ocid>
-
-# Health Checks
-oci health-check probe-monitor-result list --compartment-id <compartment-ocid>
-
-# Logging
-oci logging log list --compartment-id <compartment-ocid>
-oci logging log-group list --compartment-id <compartment-ocid>
-oci logging log-group create --compartment-id <compartment-ocid> --display-name <name>
-
-# Monitoring
-oci monitoring alarm list --compartment-id <compartment-ocid>
-oci monitoring alarm create --compartment-id <compartment-ocid> --display-name <name> --metric-compartment-id <cid> --namespace <ns> --query <query>
-
-# Search
-oci search resource list --compartment-id <tenancy-ocid> --type <resource-type>
-
-# Output Format
-oci compute instance list --compartment-id <cid> --output json
-oci compute instance list --compartment-id <cid> --output table
-oci compute instance list --compartment-id <cid> --output yaml
-
-# Pagination
-oci compute instance list --compartment-id <cid> --all
-oci compute instance list --compartment-id <cid> --limit 100
-
-# CLI Pagination
-oci compute instance list --compartment-id <cid> --page <page-token>
-
-# Raw Requests
+# Raw request (read the target API documentation before use)
 oci raw-request --http-method GET --target-uri <uri>
