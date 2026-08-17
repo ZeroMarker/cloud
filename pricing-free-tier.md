@@ -20,8 +20,7 @@ availability.
 | Long-running free VM experiments | Oracle Cloud, Google Cloud, Azure | Check exact eligible shapes and regions. Free tiers are quota-limited. |
 | Most generous new-user trial credit | Google Cloud, Oracle Cloud, Azure, IBM Cloud | Usually time-limited credits; resources may stop or bill after expiry. |
 | Cheap simple VPS | Contabo, Hetzner, IONOS, Vultr, DigitalOcean, Akamai/Linode | Watch bandwidth, backup, IPv4, snapshot, and support costs. |
-| US network and managed help | Hostwinds | Hourly cloud pricing; no clear public always-free tier found. |
-| Flexible resize / short testing | Kamatera, IONOS Cloud, Vultr, DigitalOcean | Prefer hourly billing and easy upgrade/downgrade. |
+| Flexible resize / short testing | IONOS Cloud, Vultr, DigitalOcean | Prefer hourly billing and easy upgrade/downgrade. |
 
 ## Free Credits and Free Tiers
 
@@ -41,8 +40,6 @@ availability.
 | Hetzner Cloud | No official always-free cloud tier found. | Known for low-cost hourly/monthly cloud plans; confirm current prices after 2026 price adjustments. | https://www.hetzner.com/cloud |
 | Contabo | No official always-free tier found. | Pricing page lists low-cost Cloud VPS plans, e.g. Cloud VPS 10 from EUR 5.50/month when checked. | https://contabo.com/en-us/pricing/ |
 | IONOS | VPS free trial / 30-day money-back style offer; IONOS Cloud trial access is also available. | VPS plans target simple managed-friendly hosting; IONOS Cloud is usage-based. | https://www.ionos.com/servers/free-vps |
-| Hostwinds | No clear official always-free tier found. | Cloud Servers page lists hourly pricing starting at USD 0.006931/hour when checked. | https://www.hostwinds.com/cloud/cloud-servers |
-| Kamatera | 30-day trial; terms state one server up to USD 100 plus 1 TB free traffic during trial. | No long-term commitment; can scale up/down any time. | https://www.kamatera.com/pricing/ |
 | Cloudflare | Free plan includes CDN, DDoS protection, SSL, and basic analytics. Workers free tier: 100k requests/day, 10ms CPU time. R2: 10GB storage, 1M Class A ops/month. D1: 5GB storage, 5M rows read/day, 100k rows written/day. KV: 1GB storage, 100k reads/day, 1k writes/day. | Workers paid plan starts at USD 0.30/million requests. R2: USD 0.015/GB-month storage, egress free. D1: USD 0.75/GB-month storage. | https://www.cloudflare.com/plans/ |
 | Bitiful S4 | Verified accounts receive the first 50 GB of storage free, plus monthly free allowances for S4/CDN traffic and requests; daily limits also apply. | Usage is billed hourly and includes storage, traffic, requests, and data processing. Confirm current tier boundaries and account eligibility. | https://docs.bitiful.com/prices/basic |
 | Mux | Free plan includes up to 10 stored on-demand videos and 100,000 delivery minutes per month; no credit card is required. | Live video requires a paid plan. Pay-as-you-go pricing varies by input quality, resolution, storage, delivery, and add-ons. | https://www.mux.com/pricing |

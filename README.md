@@ -64,8 +64,6 @@ must be replaced before running.
 | Hetzner Cloud | [hetzner/hcloud.sh](hetzner/hcloud.sh) |
 | Contabo | [contabo/cntb.sh](contabo/cntb.sh) |
 | IONOS | [ionos/ionosctl.sh](ionos/ionosctl.sh) |
-| Hostwinds | [hostwinds/hostwinds.sh](hostwinds/hostwinds.sh) |
-| Kamatera | [kamatera/kamatera.sh](kamatera/kamatera.sh) |
 
 ### Edge, CDN, And Media
 
