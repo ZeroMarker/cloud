@@ -51,5 +51,29 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Node.js and local secrets
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Cloud credentials, database wallets, and private state
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.sso
+Wallet_*.zip
+wallet/
+.oci/
+.aws/credentials
+.azure/
+.config/gcloud/
+terraform.tfstate
+terraform.tfstate.*
+*.tfvars
+*.auto.tfvars
+
 # debug information files
 *.dwo

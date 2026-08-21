@@ -1,7 +1,7 @@
 # Pricing and Free Tier Notes
 
 Baseline entries last checked: 2026-06-23. Oracle Cloud was rechecked on
-2026-08-15 after its Ampere A1 Always Free entitlement update. Bitiful and Mux
+2026-08-21 after its Ampere A1 entitlement update. Bitiful and Mux
 entries checked: 2026-08-01.
 
 Pricing changes often by region, currency, tax, image, bandwidth, IPv4, support
@@ -29,7 +29,7 @@ availability.
 | AWS | New Free Tier accounts advertise up to USD 200 credits over 6 months; AWS also has always-free, 12-month, and short trial offers. | For simple VPS pricing, Lightsail bundles are easier to predict than raw EC2. | https://aws.amazon.com/free/ |
 | Azure | USD 200 credit for up to 30 days, plus 12-month free services and always-free monthly service amounts. | Pay-as-you-go after upgrade; VM free eligibility is shape-specific. | https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account |
 | Google Cloud | USD 300 credit for 90 days, plus 20+ always-free products up to monthly limits. | Compute Engine has an always-free e2-micro allowance in eligible regions. | https://cloud.google.com/free |
-| Oracle Cloud | USD 300 credit for 30 days, plus Always Free services. | In the tenancy home region: up to two VM.Standard.E2.1.Micro instances; VM.Standard.A1.Flex usage equivalent to 2 OCPUs and 12 GB memory total; and 200 GB combined boot/block storage. Keep boot volumes at Balanced performance (10 VPUs/GB), use an Always Free-eligible image, and do not treat higher tenancy service limits as free allowance. | https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm |
+| Oracle Cloud | USD 300 credit for 30 days, plus Always Free services. | Current docs show pure Always Free A1 tenancy capacity at 2 OCPUs/12 GB. PAYG pricing includes the first 3,000 A1 OCPU-hours and 18,000 GB-hours per month, equivalent to 4 OCPUs/24 GB for a full 31-day month. Also includes up to two VM.Standard.E2.1.Micro instances and 200 GB combined boot/block storage in the home region. Do not treat higher service limits as free allowance. | https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm |
 | Alibaba Cloud | Free-trial page advertises USD 90 credits valid for 3 months and 80+ tools, with some offers up to 12 months free. | Promotions vary by account type and region. | https://www.alibabacloud.com/en/free |
 | Tencent Cloud | Free Tier page advertises 30+ free product packages. | Product trials are service-specific and time/quota-limited. | https://www.tencentcloud.com/act/pro/FreeTier |
 | Huawei Cloud | Free trial page includes always-free and limited-time-free packages; each product trial is generally once per product. | Some trials require Visa or Mastercard and may be first-come, first-served. | https://activity.huaweicloud.com/intl/en-us/free_packages/index.html |

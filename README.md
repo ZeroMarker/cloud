@@ -51,7 +51,7 @@ must be replaced before running.
 | Firebase | [firebase/firebase.sh](firebase/firebase.sh) |
 | Tencent Cloud | [tencent/tencentcloud.sh](tencent/tencentcloud.sh) |
 | Huawei Cloud | [huawei/hcloud.sh](huawei/hcloud.sh) |
-| Oracle Cloud Infrastructure | [oracle/oci.sh](oracle/oci.sh) |
+| Oracle Cloud Infrastructure | [oracle/README.md](oracle/README.md), [oracle/oci.sh](oracle/oci.sh) |
 | IBM Cloud | [ibm/ibmcloud.sh](ibm/ibmcloud.sh) |
 
 ### VPS And Developer Clouds

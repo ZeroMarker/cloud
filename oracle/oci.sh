@@ -1,5 +1,5 @@
 # Oracle Cloud Infrastructure (OCI) CLI command notebook
-# Last verified: 2026-08-15 with OCI CLI 3.90.2
+# Last verified: 2026-08-21 with OCI CLI 3.90.2
 #
 # This is a reference notebook, not a script to run from top to bottom.
 # Replace every <placeholder> before executing a command. Run `oci <group> --help`
@@ -18,17 +18,22 @@ oci iam region list --all
 oci iam availability-domain list --compartment-id <tenancy-ocid>
 oci iam tenancy get --tenancy-id <tenancy-ocid>
 
-# Current local deployment snapshot (2026-08-15)
-# Home region: ap-singapore-2
+# Deployment template (do not commit real resource names, addresses, or OCIDs)
+# Home region: <home-region>
 # Instance: <instance-name>
-# Shape: VM.Standard.A1.Flex, 2 OCPUs, 12 GB memory
-# Boot volume: 150 GB, 10 VPUs/GB (Balanced)
+# State: <lifecycle-state>
+# Shape: <shape>
+# OCPUs / memory: <ocpus> / <memory-gb>
+# Boot volume: <boot-volume-gb>, <vpus-per-gb> VPUs/GB
 # Public IP: <public-ip>
-# Local SSH shortcut: ssh oracle
+# Local SSH shortcut: <ssh-alias>
+# Month-to-date cost: <amount> <currency>
 
-# Always Free guardrails (verify again before creating resources)
-# - Create Always Free Compute only in the tenancy home region.
-# - VM.Standard.A1.Flex: 2 OCPUs and 12 GB memory total.
+# Always Free guardrails# - Create Always Free Compute only in the tenancy home region.
+# - Pure Always Free tenancy: current docs show A1 at 2 OCPUs / 12 GB total.
+# - PAYG A1 free metering: 3,000 OCPU-hours and 18,000 GB-hours per month,
+#   equivalent to 4 OCPUs / 24 GB running throughout a 31-day month.
+# - PAYG service limits can be higher than the free metering allowance.
 # - VM.Standard.E2.1.Micro: up to two instances.
 # - Boot volumes plus block volumes: 200 GB total.
 # - Keep boot-volume performance at 10 VPUs/GB (Balanced).
@@ -39,8 +44,10 @@ oci iam tenancy get --tenancy-id <tenancy-ocid>
 oci compute instance list --compartment-id <compartment-ocid> --all
 oci compute instance get --instance-id <instance-ocid>
 
-# Always Free A1 example. Only the public SSH key is uploaded; keep the private
-# key on the client. The 150 GB boot volume leaves 50 GB of the 200 GB allowance.
+# A1 example for a pure Always Free tenancy. PAYG accounts can use 4 OCPUs and
+# 24 GB within their monthly included A1 hours. Only the public SSH key is
+# uploaded; keep the private key on the client. The 150 GB boot volume leaves
+# 50 GB of the 200 GB storage allowance.
 oci compute instance launch \
   --compartment-id <compartment-ocid> \
   --availability-domain <availability-domain> \
@@ -58,6 +65,11 @@ oci compute instance stop --instance-id <instance-ocid>
 oci compute instance start --instance-id <instance-ocid>
 oci compute instance reboot --instance-id <instance-ocid>
 oci compute instance update --instance-id <instance-ocid> --display-name <new-name>
+# Flexible-shape resize reboots a running instance.
+oci compute instance update \
+  --instance-id <instance-ocid> \
+  --shape-config '{"ocpus": 4, "memoryInGBs": 24}' \
+  --force
 
 # Termination is destructive. Choose boot-volume behavior explicitly.
 oci compute instance terminate --instance-id <instance-ocid> --preserve-boot-volume false
@@ -226,6 +238,18 @@ oci audit event list --compartment-id <compartment-ocid> --start-time <start-tim
 oci health-checks http-monitor list --compartment-id <compartment-ocid> --all
 oci monitoring alarm list --compartment-id <compartment-ocid> --all
 oci search resource structured-search --query-text "query all resources" --limit 1000
+
+# Cost and usage. For a partial month use DAILY; MONTHLY requires first-of-month
+# boundaries. The end time is exclusive. This command has --limit, not --all.
+oci usage-api usage-summary request-summarized-usages \
+  --tenant-id <tenancy-ocid> \
+  --time-usage-started <month-start-utc> \
+  --time-usage-ended <end-utc> \
+  --granularity DAILY \
+  --query-type COST \
+  --group-by '["service"]' \
+  --is-aggregate-by-time true \
+  --limit 500
 
 # Output and pagination
 oci compute instance list --compartment-id <compartment-ocid> --output json --all

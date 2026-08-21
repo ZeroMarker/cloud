@@ -1,0 +1,13 @@
+{
+  "name": "oracle-adb-connection-test",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test-connection.mjs",
+    "create-user": "node create-app-user.mjs"
+  },
+  "dependencies": {
+    "oracledb": "^7.0.1"
+  }
+}
