@@ -36,6 +36,7 @@ must be replaced before running.
 | --- | --- |
 | [README.md](README.md) | Project overview and provider index. |
 | [pricing-free-tier.md](pricing-free-tier.md) | Free-tier, trial-credit, and cost-check notes. |
+| [translation-asr-tts-free-tier.md](translation-asr-tts-free-tier.md) | Text translation, ASR, and TTS provider free-quota comparison. |
 | `<provider>/<cli>.sh` | Provider-specific command reference. |
 
 ## Provider Index
